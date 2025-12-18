@@ -1,14 +1,10 @@
-from django.shortcuts import render
-
-# Create your views here.
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from .models import Kurs, TestBlock, Savol, TestNatija
-import json
+import time
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -40,6 +36,8 @@ def login_view(request):
                 login(request, user)
                 messages.success(request, f"Xush kelibsiz, {username}!")
                 return redirect('select_kurs')
+        else:
+            messages.error(request, "Foydalanuvchi nomi yoki parol noto'g'ri!")
     else:
         form = AuthenticationForm()
     
@@ -53,10 +51,6 @@ def logout_view(request):
 
 @login_required
 def select_kurs(request):
-    if request.method == 'POST':
-        kurs_id = request.POST.get('kurs_id')
-        return redirect('blocks_list', kurs_id=kurs_id)
-    
     kurslar = Kurs.objects.all().order_by('raqami')
     return render(request, 'testapp/select_kurs.html', {'kurslar': kurslar})
 
@@ -85,10 +79,12 @@ def submit_test(request, block_id):
         
         togri = 0
         xato = 0
+        javob_berilgan = 0
         
         for savol in savollar:
             javob = request.POST.get(f'savol_{savol.id}')
             if javob:
+                javob_berilgan += 1
                 if javob == savol.togri_javob:
                     togri += 1
                 else:

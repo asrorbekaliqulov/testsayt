@@ -1,59 +1,30 @@
-{% extends 'testapp/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kurs tanlash</title>
+    <link rel="stylesheet" href="{% static 'css/kurs.css' %}">
+</head>
+<body>
+    <main class="panel" role="main">
+        <h1>Kursni tanlang</h1>
+        <p>Quyidagi tugmalardan birini bosing va test sahifasiga o'ting.</p>
 
-{% block title %}Kurs tanlash{% endblock %}
+        <div class="btn-row">
+            {% for kurs in kurslar %}
+                <a class="btn {% cycle '' 'secondary' %}" href="{% url 'blocks_list' kurs.id %}" title="{{ kurs.nomi }}">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="4" width="18" height="16" rx="2" fill="white" opacity="0.12"/>
+                        <path d="M8 11h8M8 15h5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ kurs.raqami }}-kurs
+                </a>
+            {% endfor %}
+        </div>
 
-{% block content %}
-<style>
-    .kurs-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 30px;
-        margin-top: 30px;
-    }
-    
-    .kurs-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 40px;
-        border-radius: 16px;
-        text-align: center;
-        color: white;
-        cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
-        border: none;
-    }
-    
-    .kurs-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-    }
-    
-    .kurs-card h3 {
-        font-size: 48px;
-        margin-bottom: 10px;
-    }
-    
-    .kurs-card p {
-        font-size: 20px;
-        opacity: 0.9;
-    }
-</style>
-
-<div style="text-align: center;">
-    <h2 style="font-size: 32px; margin-bottom: 10px;">O'qiyotgan kursingizni tanlang</h2>
-    <p style="color: #6b7280; font-size: 18px;">Test topshirish uchun o'z kursingizni belgilang</p>
-</div>
-
-<form method="post">
-    {% csrf_token %}
-    <div class="kurs-grid">
-        {% for kurs in kurslar %}
-        <button type="submit" name="kurs_id" value="{{ kurs.id }}" class="kurs-card">
-            <h3>{{ kurs.raqami }}</h3>
-            <p>{{ kurs.nomi }}</p>
-        </button>
-        {% empty %}
-        <p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Hozircha kurslar qo'shilmagan</p>
-        {% endfor %}
-    </div>
-</form>
-{% endblock %}
+        <a href="{% url 'logout' %}" class="logout-link">Chiqish</a>
+    </main>
+</body>
+</html>

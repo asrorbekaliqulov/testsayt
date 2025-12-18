@@ -1,65 +1,30 @@
-{% extends 'testapp/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ kurs.nomi }} - Test Blocklari</title>
+    <link rel="stylesheet" href="{% static 'css/kurs.css' %}">
+</head>
+<body>
+    <main class="panel" role="main">
+        <h1>{{ kurs.raqami }}-kurs Test Blocklari</h1>
+        <p>Test blockini tanlang va testni boshlang.</p>
 
-{% block title %}Test blocklari{% endblock %}
-
-{% block content %}
-<style>
-    .block-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 25px;
-        margin-top: 30px;
-    }
-    
-    .block-card {
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 25px;
-        transition: all 0.3s;
-    }
-    
-    .block-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
-        transform: translateY(-5px);
-    }
-    
-    .block-card h3 {
-        color: #1f2937;
-        margin-bottom: 15px;
-        font-size: 20px;
-    }
-    
-    .block-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 15px;
-        color: #6b7280;
-        font-size: 14px;
-    }
-</style>
-
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <div>
-        <h2 style="font-size: 28px; margin-bottom: 5px;">{{ kurs.nomi }} - Test Blocklari</h2>
-        <p style="color: #6b7280;">Test topshirish uchun blockni tanlang</p>
-    </div>
-    <a href="{% url 'select_kurs' %}" class="btn btn-primary">⬅ Orqaga</a>
-</div>
-
-<div class="block-grid">
-    {% for block in blocks %}
-    <div class="block-card">
-        <h3>📝 {{ block.nomi }}</h3>
-        <div class="block-info">
-            <span>📅 {{ block.yaratilgan_vaqt|date:"d.m.Y" }}</span>
-            <span>❓ {{ block.savollar.count }} ta savol</span>
+        <div class="btn-row">
+            {% for block in blocks %}
+                <a class="btn" href="{% url 'start_test' block.id %}" title="{{ block.nomi }}">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="4" width="18" height="16" rx="2" fill="white" opacity="0.12"/>
+                        <path d="M8 11h8M8 15h5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ block.nomi }}
+                </a>
+            {% endfor %}
         </div>
-        <a href="{% url 'start_test' block.id %}" class="btn btn-success" style="width: 100%;">Boshlash</a>
-    </div>
-    {% empty %}
-    <p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Bu kurs uchun hali test blocklari qo'shilmagan</p>
-    {% endfor %}
-</div>
-{% endblock %}
+
+        <a href="{% url 'select_kurs' %}" class="logout-link">← Orqaga</a>
+    </main>
+</body>
+</html>
