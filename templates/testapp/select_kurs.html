@@ -1,0 +1,59 @@
+{% extends 'testapp/base.html' %}
+
+{% block title %}Kurs tanlash{% endblock %}
+
+{% block content %}
+<style>
+    .kurs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .kurs-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: none;
+    }
+    
+    .kurs-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .kurs-card h3 {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    
+    .kurs-card p {
+        font-size: 20px;
+        opacity: 0.9;
+    }
+</style>
+
+<div style="text-align: center;">
+    <h2 style="font-size: 32px; margin-bottom: 10px;">O'qiyotgan kursingizni tanlang</h2>
+    <p style="color: #6b7280; font-size: 18px;">Test topshirish uchun o'z kursingizni belgilang</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="kurs-grid">
+        {% for kurs in kurslar %}
+        <button type="submit" name="kurs_id" value="{{ kurs.id }}" class="kurs-card">
+            <h3>{{ kurs.raqami }}</h3>
+            <p>{{ kurs.nomi }}</p>
+        </button>
+        {% empty %}
+        <p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Hozircha kurslar qo'shilmagan</p>
+        {% endfor %}
+    </div>
+</form>
+{% endblock %}

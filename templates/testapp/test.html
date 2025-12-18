@@ -1,0 +1,261 @@
+{% extends 'testapp/base.html' %}
+
+{% block title %}{{ block.nomi }}{% endblock %}
+
+{% block content %}
+<style>
+    .test-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+    
+    .timer {
+        font-size: 32px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .question-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 25px;
+    }
+    
+    .question-number {
+        color: #667eea;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    .question-text {
+        font-size: 20px;
+        color: #1f2937;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+    
+    .variant {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 12px;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .variant:hover {
+        background: #f3f4f6;
+        border-color: #667eea;
+    }
+    
+    .variant input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 15px;
+        cursor: pointer;
+    }
+    
+    .variant.selected {
+        background: #dbeafe;
+        border-color: #3b82f6;
+    }
+    
+    .test-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .finish-btn {
+        padding: 15px 50px;
+        font-size: 18px;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        max-width: 400px;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        justify-content: center;
+    }
+    
+    body {
+        padding-bottom: 100px;
+    }
+</style>
+
+<div class="test-header">
+    <div>
+        <h2 style="margin-bottom: 5px;">{{ block.nomi }}</h2>
+        <p style="color: #6b7280;">Jami {{ savollar_soni }} ta savol</p>
+    </div>
+    <div class="timer" id="timer">00:00</div>
+</div>
+
+<form id="testForm" method="post" action="{% url 'submit_test' 1 %}">
+    {% csrf_token %}
+    <input type="hidden" name="vaqt" id="vaqtInput">
+    
+    {% for savol in savollar %}
+    <div class="question-card">
+        <div class="question-number">Savol {{ forloop.counter }} / {{ savollar_soni }}</div>
+        <div class="question-text">{{ savol.matn }}</div>
+        
+        <label class="variant">
+            <input type="radio" name="savol_{{ savol.id }}" value="A" required>
+            <span><strong>A)</strong> {{ savol.variant_a }}</span>
+        </label>
+        
+        <label class="variant">
+            <input type="radio" name="savol_{{ savol.id }}" value="B" required>
+            <span><strong>B)</strong> {{ savol.variant_b }}</span>
+        </label>
+        
+        <label class="variant">
+            <input type="radio" name="savol_{{ savol.id }}" value="C" required>
+            <span><strong>C)</strong> {{ savol.variant_c }}</span>
+        </label>
+        
+        <label class="variant">
+            <input type="radio" name="savol_{{ savol.id }}" value="D" required>
+            <span><strong>D)</strong> {{ savol.variant_d }}</span>
+        </label>
+    </div>
+    {% endfor %}
+</form>
+
+<div class="test-footer">
+    <button type="button" id="finishBtn" class="btn btn-success finish-btn" disabled>
+        ✓ Testni Tugatish
+    </button>
+</div>
+
+<!-- Tasdiqlash Modal -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px;">⚠️ Tasdiqlash</h3>
+        <p style="color: #6b7280; margin-bottom: 20px;">
+            Testni tugatmoqchimisiz? Keyinchalik javoblarni o'zgartira olmaysiz.
+        </p>
+        <div class="modal-buttons">
+            <button type="button" class="btn btn-danger" onclick="closeModal()">Yo'q</button>
+            <button type="button" class="btn btn-success" onclick="submitTest()">Ha, Tugatish</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Timer
+    let seconds = 0;
+    const timerDisplay = document.getElementById('timer');
+    const vaqtInput = document.getElementById('vaqtInput');
+    
+    function updateTimer() {
+        seconds++;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        vaqtInput.value = seconds;
+    }
+    
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // Variant tanlash
+    document.querySelectorAll('.variant').forEach(variant => {
+        variant.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // O'sha savol ichidagi boshqa variantlardan selected ni olib tashlash
+            const questionCard = this.closest('.question-card');
+            questionCard.querySelectorAll('.variant').forEach(v => {
+                v.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            
+            checkAllAnswered();
+        });
+    });
+    
+    // Barcha savollarga javob berilganini tekshirish
+    function checkAllAnswered() {
+        const totalQuestions = {{ savollar_soni }};
+        const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+        const finishBtn = document.getElementById('finishBtn');
+        
+        if (answeredQuestions === totalQuestions) {
+            finishBtn.disabled = false;
+            finishBtn.style.opacity = '1';
+        } else {
+            finishBtn.disabled = true;
+            finishBtn.style.opacity = '0.5';
+        }
+    }
+    
+    // Tugatish tugmasi
+    document.getElementById('finishBtn').addEventListener('click', function() {
+        if (!this.disabled) {
+            document.getElementById('confirmModal').classList.add('active');
+        }
+    });
+    
+    // Modal yopish
+    function closeModal() {
+        document.getElementById('confirmModal').classList.remove('active');
+    }
+    
+    // Testni yuborish
+    function submitTest() {
+        clearInterval(timerInterval);
+        document.getElementById('testForm').submit();
+    }
+    
+    // Sahifadan chiqishda ogohlantirish
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+    });
+</script>
+{% endblock %}

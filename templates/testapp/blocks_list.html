@@ -1,0 +1,65 @@
+{% extends 'testapp/base.html' %}
+
+{% block title %}Test blocklari{% endblock %}
+
+{% block content %}
+<style>
+    .block-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+    
+    .block-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 25px;
+        transition: all 0.3s;
+    }
+    
+    .block-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+        transform: translateY(-5px);
+    }
+    
+    .block-card h3 {
+        color: #1f2937;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+    
+    .block-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+        <h2 style="font-size: 28px; margin-bottom: 5px;">{{ kurs.nomi }} - Test Blocklari</h2>
+        <p style="color: #6b7280;">Test topshirish uchun blockni tanlang</p>
+    </div>
+    <a href="{% url 'select_kurs' %}" class="btn btn-primary">⬅ Orqaga</a>
+</div>
+
+<div class="block-grid">
+    {% for block in blocks %}
+    <div class="block-card">
+        <h3>📝 {{ block.nomi }}</h3>
+        <div class="block-info">
+            <span>📅 {{ block.yaratilgan_vaqt|date:"d.m.Y" }}</span>
+            <span>❓ {{ block.savollar.count }} ta savol</span>
+        </div>
+        <a href="{% url 'start_test' block.id %}" class="btn btn-success" style="width: 100%;">Boshlash</a>
+    </div>
+    {% empty %}
+    <p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Bu kurs uchun hali test blocklari qo'shilmagan</p>
+    {% endfor %}
+</div>
+{% endblock %}
