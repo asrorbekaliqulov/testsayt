@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.urls import path
-from django.shortcuts import redirect
 from django.utils.html import format_html
 from .models import Kurs, TestBlock, Savol, TestNatija, RetestRequest
 
@@ -34,12 +32,7 @@ class TestBlockAdmin(admin.ModelAdmin):
         }),
     )
     
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('dashboard-redirect/', self.admin_site.admin_view(self.dashboard_redirect), name='dashboard_redirect'),
-        ]
-        return custom_urls + urls
+
     
 
 
