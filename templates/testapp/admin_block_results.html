@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ block.nomi }} - Natijalar</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .foiz {
+            font-weight: 600;
+        }
+        .foiz.high { color: #10b981; }
+        .foiz.medium { color: #f59e0b; }
+        .foiz.low { color: #ef4444; }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2979ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'admin_dashboard' %}" class="btn">← Orqaga</a>
+        
+        <h1>{{ block.nomi }} - Natijalar</h1>
+        <p style="color: #666; margin-bottom: 20px;">
+            Kurs: {{ block.kurs }} | 
+            Jami ishtirokchilar: {{ natijalar.count }}
+        </p>
+
+        {% if natijalar %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>To'g'ri</th>
+                        <th>Xato</th>
+                        <th>Jami</th>
+                        <th>Foiz</th>
+                        <th>Vaqt</th>
+                        <th>Topshirilgan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for natija in natijalar %}
+                        <tr>
+                            <td><strong>{{ natija.user.username }}</strong></td>
+                            <td>{{ natija.togri_javoblar }}</td>
+                            <td>{{ natija.xato_javoblar }}</td>
+                            <td>{{ natija.jami_savollar }}</td>
+                            <td>
+                                <span class="foiz {% if natija.foiz >= 70 %}high{% elif natija.foiz >= 50 %}medium{% else %}low{% endif %}">
+                                    {{ natija.foiz }}%
+                                </span>
+                            </td>
+                            <td>{{ natija.vaqt_sekund|floatformat:0 }}s</td>
+                            <td>{{ natija.topshirilgan_vaqt|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #666; margin-top: 20px;">Hali natijalar yo'q</p>
+        {% endif %}
+    </div>
+</body>
+</html>

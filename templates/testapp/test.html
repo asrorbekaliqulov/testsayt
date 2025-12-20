@@ -5,15 +5,85 @@
     <meta charset="UTF-8">
     <title>{{ block.nomi }} - Test</title>
     <link rel="stylesheet" href="{% static 'css/test.css' %}">
+    <style>
+        /* Added timer styling and improved layout */
+        .timer-container {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2979ff;
+        }
+        .timer.warning {
+            color: #f59e0b;
+        }
+        .timer.danger {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .progress-bar {
+            height: 4px;
+            background: #e1e5e9;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2979ff, #1e5eff);
+            transition: width 1s linear;
+        }
+        .question-image {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .question-image img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="test-container">
-        <!-- Timer display -->
-        <div class="timer" id="timer">
-            Vaqt: <span id="time-display">00:00</span>
+        <!-- Added enhanced timer with progress bar -->
+        <div class="timer-container">
+            <div>
+                <div class="timer" id="timer">
+                    Vaqt: <span id="time-display">00:00</span>
+                </div>
+                {% if block.vaqt_turi == 'vaqtli' %}
+                    <div style="font-size: 14px; color: #666;">
+                        Jami: <span id="total-time">{{ savollar_soni|add:block.savol_vaqti }}</span> soniya
+                    </div>
+                {% endif %}
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 14px; color: #666;">Javob berilgan:</div>
+                <div style="font-size: 20px; font-weight: 600;" id="answered-count">0/{{ savollar_soni }}</div>
+            </div>
         </div>
+        {% if block.vaqt_turi == 'vaqtli' %}
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        {% endif %}
 
         <h1>{{ block.nomi }}</h1>
         
@@ -25,21 +95,29 @@
                 {% for savol in savollar %}
                 <div class="question">
                     <h3>{{ forloop.counter }}. {{ savol.matn }}</h3>
+                    
+                    <!-- Display image if available -->
+                    {% if savol.rasm %}
+                    <div class="question-image">
+                        <img src="{{ savol.rasm.url }}" alt="Savol rasmi">
+                    </div>
+                    {% endif %}
+                    
                     <div class="options">
                         <label class="option">
-                            <input type="radio" name="savol_{{ savol.id }}" value="A">
+                            <input type="radio" name="savol_{{ savol.id }}" value="A" onchange="updateAnsweredCount()">
                             A) {{ savol.variant_a }}
                         </label>
                         <label class="option">
-                            <input type="radio" name="savol_{{ savol.id }}" value="B">
+                            <input type="radio" name="savol_{{ savol.id }}" value="B" onchange="updateAnsweredCount()">
                             B) {{ savol.variant_b }}
                         </label>
                         <label class="option">
-                            <input type="radio" name="savol_{{ savol.id }}" value="C">
+                            <input type="radio" name="savol_{{ savol.id }}" value="C" onchange="updateAnsweredCount()">
                             C) {{ savol.variant_c }}
                         </label>
                         <label class="option">
-                            <input type="radio" name="savol_{{ savol.id }}" value="D">
+                            <input type="radio" name="savol_{{ savol.id }}" value="D" onchange="updateAnsweredCount()">
                             D) {{ savol.variant_d }}
                         </label>
                     </div>
@@ -52,26 +130,92 @@
     </div>
 </div>
 
-<!-- Timer JavaScript -->
 <script>
 let startTime = Date.now();
 let timerInterval;
+let totalTime = {% if block.vaqt_turi == 'vaqtli' %}{{ savollar_soni }} * {{ block.savol_vaqti }}{% else %}null{% endif %};
 
 function updateTimer() {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
     
-    document.getElementById('time-display').textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const display = document.getElementById('time-display');
+    display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     
     document.getElementById('vaqt-input').value = elapsed;
+    
+    // Update timer color based on remaining time
+    const timerEl = document.getElementById('timer');
+    if (totalTime) {
+        const remaining = totalTime - elapsed;
+        const progressFill = document.getElementById('progress-fill');
+        const progress = (elapsed / totalTime) * 100;
+        progressFill.style.width = Math.min(progress, 100) + '%';
+        
+        if (remaining <= 0) {
+            // Auto submit when time is up
+            clearInterval(timerInterval);
+            alert('Vaqt tugadi! Test avtomatik topshiriladi.');
+            document.getElementById('test-form').submit();
+        } else if (remaining <= 60) {
+            timerEl.className = 'timer danger';
+        } else if (remaining <= 180) {
+            timerEl.className = 'timer warning';
+        }
+    }
 }
+
+function updateAnsweredCount() {
+    const questions = document.querySelectorAll('.question');
+    let answered = 0;
+    
+    questions.forEach(question => {
+        const radios = question.querySelectorAll('input[type="radio"]');
+        for (let radio of radios) {
+            if (radio.checked) {
+                answered++;
+                break;
+            }
+        }
+    });
+    
+    document.getElementById('answered-count').textContent = `${answered}/{{ savollar_soni }}`;
+}
+
+// WebSocket connection for real-time sync
+const blockId = {{ block.id }};
+const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+const ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/test/${blockId}/`);
+
+ws.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    if (data.type === 'init') {
+        console.log('[v0] WebSocket connected, received block info:', data.data);
+    }
+};
+
+ws.onerror = function(e) {
+    console.log('[v0] WebSocket error:', e);
+};
 
 timerInterval = setInterval(updateTimer, 1000);
 
-document.getElementById('test-form').addEventListener('submit', function() {
+document.getElementById('test-form').addEventListener('submit', function(e) {
     clearInterval(timerInterval);
+    const unanswered = {{ savollar_soni }} - parseInt(document.getElementById('answered-count').textContent.split('/')[0]);
+    if (unanswered > 0) {
+        if (!confirm(`Sizda ${unanswered} ta javob berilmagan savol bor. Testni topshirishni xohlaysizmi?`)) {
+            e.preventDefault();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+});
+
+// Prevent accidental page close
+window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = '';
 });
 </script>
 

@@ -26,6 +26,7 @@ body {
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   overflow-y: auto;
+  order: 1;
 }
 
 .form-box {
@@ -146,11 +147,12 @@ button:hover {
   border: 1px solid #f5c6cb;
 }
 
-/* O'NG TOMON - FIXED BACKGROUND */
+/* O'NG TOMON - RASM TO'LIQ KO'RINADI */
 .right {
   width: 50%;
-  background: url("/static/img/img-1.jpg") center / cover no-repeat fixed;
+  background: url("/static/img/img-1.jpg") center / cover no-repeat;
   position: relative;
+  order: 2;
 }
 
 .right::before {

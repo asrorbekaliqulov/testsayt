@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>So'rovni ko'rib chiqish</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="left">
+            <div class="form-box">
+                <h2>Qayta Test So'rovi</h2>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <p><strong>User:</strong> {{ retest_request.user.username }}</p>
+                    <p><strong>Test:</strong> {{ retest_request.block.nomi }}</p>
+                    <p><strong>Sabab:</strong></p>
+                    <p style="white-space: pre-wrap;">{{ retest_request.sabab }}</p>
+                    <p><strong>Yuborilgan:</strong> {{ retest_request.yuborilgan_vaqt|date:"d.m.Y H:i" }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <label>Admin javobi (ixtiyoriy)</label>
+                    <textarea name="javob" rows="4" placeholder="Javob kiriting..." style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e1e5e9; font-size: 14px; font-family: inherit;"></textarea>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" name="action" value="approve" style="flex: 1; background: #10b981;">
+                            Tasdiqlash
+                        </button>
+                        <button type="submit" name="action" value="reject" style="flex: 1; background: #ef4444;">
+                            Rad etish
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="links" style="margin-top: 20px;">
+                    <a href="{% url 'admin_dashboard' %}">Orqaga</a>
+                </div>
+            </div>
+        </div>
+        <div class="right"></div>
+    </div>
+</body>
+</html>

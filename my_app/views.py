@@ -3,8 +3,11 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from .models import Kurs, TestBlock, Savol, TestNatija
-import time
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db.models import Q
+from .models import Kurs, TestBlock, Savol, TestNatija, RetestRequest
+import json
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -36,8 +39,6 @@ def login_view(request):
                 login(request, user)
                 messages.success(request, f"Xush kelibsiz, {username}!")
                 return redirect('select_kurs')
-        else:
-            messages.error(request, "Foydalanuvchi nomi yoki parol noto'g'ri!")
     else:
         form = AuthenticationForm()
     
@@ -51,6 +52,10 @@ def logout_view(request):
 
 @login_required
 def select_kurs(request):
+    if request.method == 'POST':
+        kurs_id = request.POST.get('kurs_id')
+        return redirect('blocks_list', kurs_id=kurs_id)
+    
     kurslar = Kurs.objects.all().order_by('raqami')
     return render(request, 'testapp/select_kurs.html', {'kurslar': kurslar})
 
@@ -58,11 +63,62 @@ def select_kurs(request):
 def blocks_list(request, kurs_id):
     kurs = get_object_or_404(Kurs, id=kurs_id)
     blocks = TestBlock.objects.filter(kurs=kurs)
-    return render(request, 'testapp/blocks_list.html', {'kurs': kurs, 'blocks': blocks})
+    
+    blocks_data = []
+    for block in blocks:
+        # User testni allaqachon ishlagan yoki yo'qligini tekshirish
+        natija = TestNatija.objects.filter(user=request.user, block=block).first()
+        
+        # Qayta test so'rovi mavjudmi
+        retest_request = RetestRequest.objects.filter(
+            user=request.user, 
+            block=block, 
+            status='kutilmoqda'
+        ).first()
+        
+        blocks_data.append({
+            'block': block,
+            'can_access': block.user_can_access(request.user),
+            'is_active': block.is_active(),
+            'natija': natija,
+            'retest_request': retest_request,
+            'savollar_soni': block.savollar.count()
+        })
+    
+    return render(request, 'testapp/blocks_list.html', {
+        'kurs': kurs, 
+        'blocks_data': blocks_data
+    })
 
 @login_required
 def start_test(request, block_id):
     block = get_object_or_404(TestBlock, id=block_id)
+    
+    if not block.user_can_access(request.user):
+        messages.error(request, "Siz bu testga kirish huquqiga ega emassiz!")
+        return redirect('blocks_list', kurs_id=block.kurs.id)
+    
+    if not block.is_active():
+        messages.error(request, "Test hali boshlanmagan yoki tugagan!")
+        return redirect('blocks_list', kurs_id=block.kurs.id)
+    
+    # Testni allaqachon ishlagan bo'lsa
+    natija = TestNatija.objects.filter(user=request.user, block=block).first()
+    if natija:
+        # Qayta test so'rovi tasdiqlangan bo'lsa
+        retest = RetestRequest.objects.filter(
+            user=request.user, 
+            block=block, 
+            status='tasdiqlandi'
+        ).order_by('-korilgan_vaqt').first()
+        
+        if not retest:
+            messages.warning(request, "Siz allaqachon bu testni ishlagansiz. Qayta ishlash uchun admindan ruxsat so'rang.")
+            return redirect('blocks_list', kurs_id=block.kurs.id)
+        else:
+            # Tasdiqlangan so'rovni o'chirish
+            retest.delete()
+    
     savollar = list(block.savollar.all())
     
     return render(request, 'testapp/test.html', {
@@ -79,12 +135,17 @@ def submit_test(request, block_id):
         
         togri = 0
         xato = 0
-        javob_berilgan = 0
+        javoblar = {}
         
         for savol in savollar:
             javob = request.POST.get(f'savol_{savol.id}')
+            javoblar[str(savol.id)] = {
+                'berilgan_javob': javob,
+                'togri_javob': savol.togri_javob,
+                'togri': javob == savol.togri_javob if javob else False
+            }
+            
             if javob:
-                javob_berilgan += 1
                 if javob == savol.togri_javob:
                     togri += 1
                 else:
@@ -97,7 +158,9 @@ def submit_test(request, block_id):
             block=block,
             togri_javoblar=togri,
             xato_javoblar=xato,
-            vaqt_sekund=vaqt
+            jami_savollar=savollar.count(),
+            vaqt_sekund=vaqt,
+            javoblar=javoblar
         )
         
         return redirect('test_result', natija_id=natija.id)
@@ -107,16 +170,102 @@ def submit_test(request, block_id):
 @login_required
 def test_result(request, natija_id):
     natija = get_object_or_404(TestNatija, id=natija_id, user=request.user)
-    jami = natija.togri_javoblar + natija.xato_javoblar
-    foiz = (natija.togri_javoblar / jami * 100) if jami > 0 else 0
     
     minutes = natija.vaqt_sekund // 60
     seconds = natija.vaqt_sekund % 60
     
     return render(request, 'testapp/result.html', {
         'natija': natija,
-        'jami': jami,
-        'foiz': round(foiz, 2),
         'minutes': minutes,
         'seconds': seconds
+    })
+
+@login_required
+def request_retest(request, block_id):
+    block = get_object_or_404(TestBlock, id=block_id)
+    
+    if request.method == 'POST':
+        sabab = request.POST.get('sabab', '').strip()
+        
+        if not sabab:
+            messages.error(request, "Iltimos, sabab kiriting!")
+            return redirect('blocks_list', kurs_id=block.kurs.id)
+        
+        # Avvalgi kutilayotgan so'rov bormi tekshirish
+        existing = RetestRequest.objects.filter(
+            user=request.user,
+            block=block,
+            status='kutilmoqda'
+        ).first()
+        
+        if existing:
+            messages.warning(request, "Sizning so'rovingiz allaqachon ko'rib chiqilmoqda!")
+        else:
+            RetestRequest.objects.create(
+                user=request.user,
+                block=block,
+                sabab=sabab
+            )
+            messages.success(request, "So'rovingiz adminga yuborildi!")
+        
+        return redirect('blocks_list', kurs_id=block.kurs.id)
+    
+    return render(request, 'testapp/request_retest.html', {'block': block})
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        messages.error(request, "Bu sahifaga faqat adminlar kirishi mumkin!")
+        return redirect('select_kurs')
+    
+    # Kutilayotgan so'rovlar
+    pending_requests = RetestRequest.objects.filter(status='kutilmoqda').select_related('user', 'block')
+    
+    # Barcha blocklar
+    blocks = TestBlock.objects.all().select_related('kurs')
+    
+    return render(request, 'testapp/admin_dashboard.html', {
+        'pending_requests': pending_requests,
+        'blocks': blocks
+    })
+
+@login_required
+def admin_approve_retest(request, request_id):
+    if not request.user.is_staff:
+        messages.error(request, "Ruxsat yo'q!")
+        return redirect('select_kurs')
+    
+    retest_request = get_object_or_404(RetestRequest, id=request_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        javob = request.POST.get('javob', '')
+        
+        if action == 'approve':
+            retest_request.status = 'tasdiqlandi'
+            messages.success(request, f"{retest_request.user.username} uchun qayta test ruxsat berildi!")
+        elif action == 'reject':
+            retest_request.status = 'rad_etildi'
+            messages.info(request, "So'rov rad etildi.")
+        
+        retest_request.admin_javobi = javob
+        retest_request.korilgan_vaqt = timezone.now()
+        retest_request.save()
+        
+        return redirect('admin_dashboard')
+    
+    return render(request, 'testapp/admin_approve_retest.html', {'retest_request': retest_request})
+
+@login_required
+def admin_block_results(request, block_id):
+    if not request.user.is_staff:
+        messages.error(request, "Ruxsat yo'q!")
+        return redirect('select_kurs')
+    
+    block = get_object_or_404(TestBlock, id=block_id)
+    natijalar = TestNatija.objects.filter(block=block).select_related('user').order_by('-topshirilgan_vaqt')
+    
+    return render(request, 'testapp/admin_block_results.html', {
+        'block': block,
+        'natijalar': natijalar
     })

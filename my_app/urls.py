@@ -10,4 +10,11 @@ urlpatterns = [
     path('test/<int:block_id>/', views.start_test, name='start_test'),
     path('submit/<int:block_id>/', views.submit_test, name='submit_test'),
     path('result/<int:natija_id>/', views.test_result, name='test_result'),
+    
+    path('request-retest/<int:block_id>/', views.request_retest, name='request_retest'),
+    
+    # Admin routes
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('ad/approve-retest/<int:request_id>/', views.admin_approve_retest, name='admin_approve_retest'),
+    path('ad/block-results/<int:block_id>/', views.admin_block_results, name='admin_block_results'),
 ]

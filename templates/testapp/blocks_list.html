@@ -6,25 +6,143 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{{ kurs.nomi }} - Test Blocklari</title>
     <link rel="stylesheet" href="{% static 'css/kurs.css' %}">
+    <style>
+        .block-card {
+            position: relative;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            border: 2px solid #e1e5e9;
+        }
+        .block-card h3 {
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        .block-card p {
+            color: #4b5563;
+            margin: 6px 0;
+        }
+        .block-info p {
+            color: #6b7280;
+        }
+        .block-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-active { background: #10b981; color: white; }
+        .status-inactive { background: #ef4444; color: white; }
+        .status-open { background: #3b82f6; color: white; }
+        .status-closed { background: #f59e0b; color: white; }
+        .block-info { margin-top: 10px; font-size: 14px; }
+        .btn-retest {
+            background: #f59e0b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .retest-pending {
+            color: #f59e0b;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .completed-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
     <main class="panel" role="main">
         <h1>{{ kurs.raqami }}-kurs Test Blocklari</h1>
         <p>Test blockini tanlang va testni boshlang.</p>
 
-        <div class="btn-row">
-            {% for block in blocks %}
-                <a class="btn" href="{% url 'start_test' block.id %}" title="{{ block.nomi }}">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="4" width="18" height="16" rx="2" fill="white" opacity="0.12"/>
-                        <path d="M8 11h8M8 15h5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    {{ block.nomi }}
-                </a>
+        {% if messages %}
+            <div style="margin: 20px 0;">
+                {% for message in messages %}
+                    <div style="padding: 12px; background: {% if message.tags == 'error' %}#fee2e2{% elif message.tags == 'success' %}#d1fae5{% else %}#fef3c7{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="blocks-list">
+            {% for data in blocks_data %}
+                <div class="block-card">
+                    <h3>
+                        {{ data.block.nomi }}
+                        <span class="block-status {% if data.block.block_turi == 'ochiq' %}status-open{% else %}status-closed{% endif %}">
+                            {{ data.block.get_block_turi_display }}
+                        </span>
+                        <span class="block-status {% if data.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if data.is_active %}Aktiv{% else %}Nofaol{% endif %}
+                        </span>
+                        {% if data.natija %}
+                            <span class="completed-badge">Ishlangan</span>
+                        {% endif %}
+                    </h3>
+                    
+                    <div class="block-info">
+                        <p>Savollar soni: {{ data.savollar_soni }}</p>
+                        <p>Vaqt turi: {{ data.block.get_vaqt_turi_display }}</p>
+                        {% if data.block.vaqt_turi == 'vaqtli' %}
+                            <p>Har bir savol uchun: {{ data.block.savol_vaqti }} soniya</p>
+                        {% endif %}
+                        {% if data.block.boshlash_vaqti %}
+                            <p>Boshlash: {{ data.block.boshlash_vaqti|date:"d.m.Y H:i" }}</p>
+                        {% endif %}
+                        {% if data.block.tugash_vaqti %}
+                            <p>Tugash: {{ data.block.tugash_vaqti|date:"d.m.Y H:i" }}</p>
+                        {% endif %}
+                    </div>
+
+                    {% if data.natija %}
+                        <p style="margin-top: 10px;">
+                            Natija: {{ data.natija.togri_javoblar }}/{{ data.natija.jami_savollar }} 
+                            ({{ data.natija.foiz }}%)
+                        </p>
+                        
+                        {% if data.retest_pending %}
+                            <p class="retest-pending">Qayta ishlash so'rovingiz ko'rilmoqda...</p>
+                        {% else %}
+                            <a href="{% url 'request_retest' data.block.id %}" class="btn-retest">
+                                Qayta ishlash so'rovi
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        {% if data.can_access and data.is_active %}
+                            <a class="btn" href="{% url 'start_test' data.block.id %}">
+                                Testni boshlash
+                            </a>
+                        {% elif not data.can_access %}
+                            <p style="color: #ef4444; margin-top: 10px;">Sizga bu testga kirish ruxsati yo'q</p>
+                        {% elif not data.is_active %}
+                            <p style="color: #f59e0b; margin-top: 10px;">Test hali boshlanmagan yoki tugagan</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
             {% endfor %}
         </div>
 
-        <a href="{% url 'select_kurs' %}" class="logout-link">← Orqaga</a>
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <a href="{% url 'select_kurs' %}" class="logout-link">Orqaga</a>
+            <a href="{% url 'logout' %}" class="logout-link">Chiqish</a>
+            {% if user.is_staff %}
+                <a href="{% url 'admin_dashboard' %}" class="btn" style="margin-left: auto;">Admin Dashboard</a>
+            {% endif %}
+        </div>
     </main>
 </body>
 </html>

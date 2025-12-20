@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Qayta test so'rovi</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="left">
+            <div class="form-box">
+                <h2>Qayta Test So'rovi</h2>
+                <p class="subtitle">{{ block.nomi }} testini qayta ishlash uchun admindan ruxsat so'rang</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <label>Sabab</label>
+                    <textarea name="sabab" rows="5" placeholder="Qayta test ishlash sababini kiriting..." required style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e1e5e9; font-size: 14px; font-family: inherit;"></textarea>
+                    
+                    <button type="submit">So'rov yuborish</button>
+                </form>
+                
+                <div class="links">
+                    <a href="{% url 'blocks_list' block.kurs.id %}">Orqaga</a>
+                </div>
+            </div>
+        </div>
+        <div class="right"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #555;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+            padding-bottom: 10px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e5e9;
+        }
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2979ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-right: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #1e5eff;
+        }
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-danger {
+            background: #ef4444;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .nav-links {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        
+        <div class="nav-links">
+            <a href="{% url 'select_kurs' %}" class="btn">Kurslar</a>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Chiqish</a>
+        </div>
+
+        {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for message in messages %}
+                    <div style="padding: 12px; background: {% if message.tags == 'error' %}#fee2e2{% elif message.tags == 'success' %}#d1fae5{% else %}#fef3c7{% endif %}; border-radius: 8px; margin-bottom: 10px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>Qayta Test So'rovlari ({{ pending_requests.count }})</h2>
+            
+            {% if pending_requests %}
+                {% for request in pending_requests %}
+                    <div class="card">
+                        <h3>{{ request.user.username }} - {{ request.block.nomi }}</h3>
+                        <p><strong>Sabab:</strong> {{ request.sabab }}</p>
+                        <p><strong>Yuborilgan:</strong> {{ request.yuborilgan_vaqt|date:"d.m.Y H:i" }}</p>
+                        <span class="badge badge-pending">Kutilmoqda</span>
+                        <div>
+                            <a href="{% url 'admin_approve_retest' request.id %}" class="btn btn-success">Ko'rib chiqish</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #666;">Hozirda kutilayotgan so'rovlar yo'q</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Barcha Test Blocklari</h2>
+            
+            {% for block in blocks %}
+                <div class="card">
+                    <h3>{{ block.nomi }} ({{ block.kurs }})</h3>
+                    <p>
+                        <span class="badge" style="background: {% if block.block_turi == 'ochiq' %}#3b82f6{% else %}#f59e0b{% endif %}; color: white;">
+                            {{ block.get_block_turi_display }}
+                        </span>
+                        <span class="badge" style="background: {% if block.is_active %}#10b981{% else %}#ef4444{% endif %}; color: white;">
+                            {% if block.is_active %}Aktiv{% else %}Nofaol{% endif %}
+                        </span>
+                    </p>
+                    <p><strong>Savollar:</strong> {{ block.savollar.count }} ta</p>
+                    <p><strong>Natijalar:</strong> {{ block.natijalar.count }} ta</p>
+                    <div>
+                        <a href="{% url 'admin_block_results' block.id %}" class="btn">Natijalarni ko'rish</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
