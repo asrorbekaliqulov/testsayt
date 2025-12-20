@@ -11,16 +11,11 @@ class KursAdmin(admin.ModelAdmin):
 
 @admin.register(TestBlock)
 class TestBlockAdmin(admin.ModelAdmin):
-    list_display = ['nomi', 'kurs', 'block_turi', 'vaqt_turi', 'boshlash_vaqti', 'tugash_vaqti', 'is_active', 'dashboard_link']
+    list_display = ['nomi', 'kurs', 'block_turi', 'vaqt_turi', 'boshlash_vaqti', 'tugash_vaqti', 'is_active']
     list_filter = ['block_turi', 'vaqt_turi', 'kurs']
     search_fields = ['nomi']
     filter_horizontal = ['tanlangan_userlar']
-    
-    def dashboard_link(self, obj):
-        return format_html(
-            '<a class="button" href="/admin-dashboard/" target="_blank">Admin Dashboard</a>'
-        )
-    dashboard_link.short_description = 'Dashboard'
+
     
     fieldsets = (
         ('Asosiy ma\'lumotlar', {
@@ -46,8 +41,7 @@ class TestBlockAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
     
-    def dashboard_redirect(self, request):
-        return redirect('admin_dashboard')
+
 
 @admin.register(Savol)
 class SavolAdmin(admin.ModelAdmin):
