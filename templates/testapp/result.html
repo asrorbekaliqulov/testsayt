@@ -3,7 +3,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Test Natijalari | IIV Sirdaryo akademik litseyi</title>
+    <title>Test Natijalari</title>
     <link rel="stylesheet" href="{% static 'css/result.css' %}">
 </head>
 <body>
@@ -22,17 +22,20 @@
             <div class="value">{{ natija.xato_javoblar }}</div>
         </div>
         
+        <!-- Jami savollar ko'rsatiladi -->
         <div class="stat-card info">
             <h3>Jami savollar</h3>
             <div class="value">{{ jami }}</div>
         </div>
         
+        <!-- Vaqt to'g'ri formatda ko'rsatiladi -->
         <div class="stat-card info">
             <h3>Sarflangan vaqt</h3>
             <div class="value">{{ minutes }}:{{ seconds|stringformat:"02d" }}</div>
         </div>
     </div>
     
+    <!-- Foiz ko'rsatiladi -->
     <div class="score-circle">
         {{ foiz }}%
     </div>

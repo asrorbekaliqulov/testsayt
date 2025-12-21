@@ -66,10 +66,8 @@ def blocks_list(request, kurs_id):
     
     blocks_data = []
     for block in blocks:
-        # User testni allaqachon ishlagan yoki yo'qligini tekshirish
         natija = TestNatija.objects.filter(user=request.user, block=block).first()
         
-        # Qayta test so'rovi mavjudmi
         retest_request = RetestRequest.objects.filter(
             user=request.user, 
             block=block, 
@@ -102,10 +100,8 @@ def start_test(request, block_id):
         messages.error(request, "Test hali boshlanmagan yoki tugagan!")
         return redirect('blocks_list', kurs_id=block.kurs.id)
     
-    # Testni allaqachon ishlagan bo'lsa
     natija = TestNatija.objects.filter(user=request.user, block=block).first()
     if natija:
-        # Qayta test so'rovi tasdiqlangan bo'lsa
         retest = RetestRequest.objects.filter(
             user=request.user, 
             block=block, 
@@ -116,8 +112,8 @@ def start_test(request, block_id):
             messages.warning(request, "Siz allaqachon bu testni ishlagansiz. Qayta ishlash uchun admindan ruxsat so'rang.")
             return redirect('blocks_list', kurs_id=block.kurs.id)
         else:
-            # Tasdiqlangan so'rovni o'chirish
             retest.delete()
+            natija.delete()
     
     savollar = list(block.savollar.all())
     
@@ -177,7 +173,9 @@ def test_result(request, natija_id):
     return render(request, 'testapp/result.html', {
         'natija': natija,
         'minutes': minutes,
-        'seconds': seconds
+        'seconds': seconds,
+        'foiz': natija.foiz(),
+        'jami': natija.jami_savollar
     })
 
 @login_required

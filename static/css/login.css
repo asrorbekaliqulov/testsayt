@@ -147,12 +147,13 @@ button:hover {
   border: 1px solid #f5c6cb;
 }
 
-/* O'NG TOMON - RASM TO'LIQ KO'RINADI */
+/* Rasm asl o'lchamida to'liq ko'rinadi */
 .right {
   width: 50%;
-  background: url("/static/img/img-1.jpg") center / cover no-repeat;
+  background: url("/static/img/img-1.jpg") center center / contain no-repeat;
   position: relative;
   order: 2;
+  background-color: #1a1a2e;
 }
 
 .right::before {
