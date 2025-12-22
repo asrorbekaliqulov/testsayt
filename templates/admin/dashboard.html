@@ -1,0 +1,67 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1 class="page-title">Dashboard</h1>
+    <div class="user-info">
+        <span>{{ request.user.get_full_name }}</span>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div class="content-box" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white;">
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">{{ total_users }}</div>
+        <div style="font-size: 16px; opacity: 0.9;">Foydalanuvchilar</div>
+    </div>
+    
+    <div class="content-box" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;">
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">{{ total_courses }}</div>
+        <div style="font-size: 16px; opacity: 0.9;">Kurslar</div>
+    </div>
+    
+    <div class="content-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white;">
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">{{ total_tests }}</div>
+        <div style="font-size: 16px; opacity: 0.9;">Test Bloklari</div>
+    </div>
+    
+    <div class="content-box" style="background: linear-gradient(135deg, #27ae60, #229954); color: white;">
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">{{ total_results }}</div>
+        <div style="font-size: 16px; opacity: 0.9;">Topshirilgan Testlar</div>
+    </div>
+</div>
+
+<div class="content-box">
+    <h2 style="margin-bottom: 20px; color: #2c3e50;">Oxirgi natijalar</h2>
+    
+    {% if recent_results %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ecf0f1;">
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">O'quvchi</th>
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Test</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Natija</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Sana</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in recent_results %}
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px;">{{ result.user.get_full_name }}</td>
+                <td style="padding: 12px;">{{ result.test_block.title }}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <span style="padding: 6px 12px; border-radius: 20px; background: {% if result.get_percentage >= 60 %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if result.get_percentage >= 60 %}#155724{% else %}#721c24{% endif %}; font-weight: 600;">
+                        {{ result.correct_answers }}/{{ result.total_questions }} ({{ result.get_percentage|floatformat:0 }}%)
+                    </span>
+                </td>
+                <td style="padding: 12px; text-align: center;">{{ result.completed_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #7f8c8d; text-align: center; padding: 40px 0;">Hozircha natijalar yo'q</p>
+    {% endif %}
+</div>
+{% endblock %}

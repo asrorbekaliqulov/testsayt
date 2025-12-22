@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50, #34495e);
+            color: white;
+            padding: 25px 0;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 25px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin: 5px 0;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 25px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: #3498db;
+        }
+
+        .menu-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 26px;
+            color: #2c3e50;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #2980b9;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .content-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-header h1 {
+            color: #2c3e50;
+            font-size: 26px;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8f9fa;
+        }
+
+        .data-table th {
+            padding: 14px;
+            text-align: left;
+            color: #6c757d;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .data-table td {
+            padding: 14px;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-primary {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-secondary {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        .alert-error, .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: #17a2b8;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        .col-md-6 {
+            flex: 0 0 calc(50% - 10px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header, .menu-text {
+                display: none;
+            }
+            
+            .menu-link {
+                justify-content: center;
+            }
+            
+            .menu-icon {
+                margin: 0;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .col-md-6 {
+                flex: 0 0 100%;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Admin Panel</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="{% url 'admin_dashboard' %}" class="menu-link {% if request.path == '/custom-admin/' %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'admin_courses' %}" class="menu-link {% if 'courses' in request.path %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-book"></i></span>
+                        <span class="menu-text">Kurslar</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'admin_groups' %}" class="menu-link {% if 'groups' in request.path and 'test-blocks' not in request.path %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-users"></i></span>
+                        <span class="menu-text">Guruhlar</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'admin_test_blocks' %}" class="menu-link {% if 'test-blocks' in request.path or 'questions' in request.path %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="menu-text">Test Bloklari</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'admin_users' %}" class="menu-link {% if 'users' in request.path and 'results' not in request.path %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-user-graduate"></i></span>
+                        <span class="menu-text">O'quvchilar</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'admin_results' %}" class="menu-link {% if 'results' in request.path %}active{% endif %}">
+                        <span class="menu-icon"><i class="fas fa-chart-bar"></i></span>
+                        <span class="menu-text">Natijalar</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/" class="menu-link" target="_blank">
+                        <span class="menu-icon"><i class="fas fa-cog"></i></span>
+                        <span class="menu-text">Django Admin</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'dashboard' %}" class="menu-link">
+                        <span class="menu-icon"><i class="fas fa-home"></i></span>
+                        <span class="menu-text">Saytga qaytish</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

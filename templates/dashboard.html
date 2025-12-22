@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | IIV Sirdaryo akademik litseyi{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: radial-gradient(800px 400px at 10% 20%, rgba(96,165,250,0.08), transparent 10%),
+                    radial-gradient(700px 350px at 90% 80%, rgba(110,231,183,0.06), transparent 15%),
+                    #0f1724;
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    .navbar {
+        background: rgba(11, 18, 32, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(110, 231, 183, 0.3);
+    }
+
+    .site-title {
+        color: #e6eef8;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .user-details {
+        text-align: right;
+    }
+
+    .user-name {
+        color: #6ee7b7;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .user-group {
+        color: rgba(230, 238, 248, 0.7);
+        font-size: 13px;
+    }
+
+    .logout-btn {
+        padding: 10px 20px;
+        background: linear-gradient(90deg, #ff7a66, #ffd166);
+        border: none;
+        color: #0f1724;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .logout-btn:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 122, 102, 0.3);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-title {
+        text-align: center;
+        color: #e6eef8;
+        font-size: 28px;
+        margin-bottom: 40px;
+        animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .blocks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        animation: fadeInUp 1s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .block-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .block-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .block-card:hover::before {
+        left: 100%;
+    }
+
+    .block-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(2,6,23,0.7);
+        border-color: rgba(110, 231, 183, 0.2);
+    }
+
+    .block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .block-title {
+        color: #e6eef8;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .block-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-locked {
+        background: rgba(255, 122, 102, 0.15);
+        color: #ff7a66;
+        border: 1px solid rgba(255, 122, 102, 0.3);
+    }
+
+    .status-active {
+        background: rgba(110, 231, 183, 0.15);
+        color: #6ee7b7;
+        border: 1px solid rgba(110, 231, 183, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .status-expired {
+        background: rgba(255, 209, 102, 0.15);
+        color: #ffd166;
+        border: 1px solid rgba(255, 209, 102, 0.3);
+    }
+
+    .status-completed {
+        background: rgba(96, 165, 250, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+
+    .block-info {
+        color: rgba(230, 238, 248, 0.7);
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .block-time {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(230, 238, 248, 0.8);
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .block-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #6ee7b7, #60a5fa);
+        color: #0f1724;
+        box-shadow: 0 6px 18px rgba(96,165,250,0.12);
+    }
+
+    .btn-primary:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(96,165,250,0.2);
+    }
+
+    .btn-disabled {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(230, 238, 248, 0.4);
+        cursor: not-allowed;
+    }
+
+    .btn-view {
+        background: linear-gradient(90deg, #60a5fa, #6ee7b7);
+        color: #0f1724;
+    }
+
+    .btn-view:hover {
+        filter: brightness(1.1);
+    }
+
+    .lock-icon {
+        font-size: 40px;
+        text-align: center;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px 20px;
+        }
+        
+        .user-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .blocks-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="{% static '/img/img-2.jpg' %}" alt="Logo" class="logo-img">
+        <div class="site-title">IIV Sirdaryo akademik litseyi axborot test markazi</div>
+    </div>
+    <div class="user-info">
+        <div class="user-details">
+            <div class="user-name">{{ user.get_full_name }}</div>
+            {% if user.group %}
+            <div class="user-group">{{ user.group.name }}</div>
+            {% endif %}
+        </div>
+        {% if user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}" class="logout-btn" style="background: linear-gradient(90deg, #6ee7b7, #60a5fa);">Admin Panel</a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="logout-btn">Chiqish</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="page-title">Test Bloklari</h1>
+
+    {% if blocks_data %}
+    <div class="blocks-grid">
+        {% for item in blocks_data %}
+        <div class="block-card">
+            <div class="block-header">
+                <h3 class="block-title">{{ item.block.title }}</h3>
+                {% if item.completed %}
+                    <span class="block-status status-completed">✓ Topshirilgan</span>
+                {% elif item.is_locked %}
+                    <span class="block-status status-locked">🔒 Yopiq</span>
+                {% elif item.is_expired %}
+                    <span class="block-status status-expired">⏰ Tugagan</span>
+                {% elif item.can_take %}
+                    <span class="block-status status-active">✓ Faol</span>
+                {% endif %}
+            </div>
+
+            {% if item.block.description %}
+            <p class="block-info">{{ item.block.description }}</p>
+            {% endif %}
+
+            <div class="block-time">
+                <span>📅 Boshlanish:</span>
+                <span>{{ item.block.start_time|date:"d.m.Y H:i" }}</span>
+            </div>
+            
+            <div class="block-time">
+                <span>⏱️ Har bir savol:</span>
+                <span>{{ item.block.time_per_question }} daqiqa</span>
+            </div>
+
+            <div class="block-time">
+                <span>📝 Savollar:</span>
+                <span>{{ item.block.questions.count }} ta</span>
+            </div>
+
+            {% if item.is_locked %}
+                <div class="lock-icon">🔒</div>
+                <button class="block-btn btn-disabled" disabled>
+                    {{ item.block.start_time|date:"d.m.Y H:i" }} dan keyin ochiladi
+                </button>
+            {% elif item.completed %}
+                <a href="{% url 'view_result' item.block.results.first.id %}" class="block-btn btn-view">
+                    Natijani ko'rish
+                </a>
+            {% elif item.can_take %}
+                <a href="{% url 'take_test' item.block.id %}" class="block-btn btn-primary">
+                    Testni boshlash
+                </a>
+            {% elif item.is_expired %}
+                <button class="block-btn btn-disabled" disabled>
+                    Test muddati tugagan
+                </button>
+            {% else %}
+                <button class="block-btn btn-disabled" disabled>
+                    Mavjud emas
+                </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; color: rgba(230, 238, 248, 0.7); margin-top: 60px;">
+        <p style="font-size: 18px;">Hozircha test bloklari mavjud emas</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

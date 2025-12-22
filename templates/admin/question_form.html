@@ -1,0 +1,99 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{% if question %}Savolni Tahrirlash{% else %}Yangi Savol{% endif %} | Admin Panel{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>
+        <i class="fas fa-question-circle"></i> 
+        {% if question %}Savolni Tahrirlash{% else %}Yangi Savol Qo'shish{% endif %}
+    </h1>
+    <a href="{% url 'admin_test_questions' test_block.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Orqaga
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="test-info" style="margin-bottom: 25px; padding: 15px; background: rgba(96,165,250,0.1); border-left: 3px solid #60a5fa; border-radius: 5px;">
+            <strong style="color: #60a5fa;">{{ test_block.title }}</strong>
+            <span style="color: rgba(230, 238, 248, 0.7); margin-left: 15px;">{{ test_block.course.name }}</span>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="question_text">Savol matni *</label>
+                <textarea id="question_text" name="question_text" class="form-control" rows="4" required>{% if question %}{{ question.question_text }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="option_a">A variant *</label>
+                    <input type="text" id="option_a" name="option_a" class="form-control" 
+                           value="{% if question %}{{ question.option_a }}{% endif %}" required>
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="option_b">B variant *</label>
+                    <input type="text" id="option_b" name="option_b" class="form-control" 
+                           value="{% if question %}{{ question.option_b }}{% endif %}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="option_c">C variant *</label>
+                    <input type="text" id="option_c" name="option_c" class="form-control" 
+                           value="{% if question %}{{ question.option_c }}{% endif %}" required>
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="option_d">D variant *</label>
+                    <input type="text" id="option_d" name="option_d" class="form-control" 
+                           value="{% if question %}{{ question.option_d }}{% endif %}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="correct_answer">To'g'ri javob *</label>
+                    <select id="correct_answer" name="correct_answer" class="form-control" required>
+                        <option value="">Tanlang...</option>
+                        <option value="A" {% if question and question.correct_answer == 'A' %}selected{% endif %}>A</option>
+                        <option value="B" {% if question and question.correct_answer == 'B' %}selected{% endif %}>B</option>
+                        <option value="C" {% if question and question.correct_answer == 'C' %}selected{% endif %}>C</option>
+                        <option value="D" {% if question and question.correct_answer == 'D' %}selected{% endif %}>D</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="order">Tartib raqami *</label>
+                    <input type="number" id="order" name="order" class="form-control" 
+                           value="{% if question %}{{ question.order }}{% else %}{{ next_order }}{% endif %}" 
+                           min="1" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Saqlash
+                </button>
+                <a href="{% url 'admin_test_questions' test_block.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+     

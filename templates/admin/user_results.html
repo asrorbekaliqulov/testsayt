@@ -1,0 +1,64 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ view_user.get_full_name }} - Natijalar{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1 class="page-title">{{ view_user.get_full_name }} - Natijalari</h1>
+    <a href="{% url 'admin_results' %}" class="btn btn-secondary">Orqaga</a>
+</div>
+
+<div class="content-box" style="margin-bottom: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div>
+            <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">O'quvchi</div>
+            <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{{ view_user.get_full_name }}</div>
+        </div>
+        <div>
+            <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">Guruh</div>
+            <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">
+                {% if view_user.group %}
+                    {{ view_user.group.name }}
+                {% else %}
+                    Guruh biriktirilmagan
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">Topshirilgan testlar</div>
+            <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{{ results|length }} ta</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-box">
+    {% if results %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ecf0f1;">
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Test nomi</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Natija</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Vaqt</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Sana</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px;">{{ result.test_block.title }}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <span style="padding: 6px 12px; border-radius: 20px; background: {% if result.get_percentage >= 60 %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if result.get_percentage >= 60 %}#155724{% else %}#721c24{% endif %}; font-weight: 600;">
+                        {{ result.correct_answers }}/{{ result.total_questions }} ({{ result.get_percentage|floatformat:0 }}%)
+                    </span>
+                </td>
+                <td style="padding: 12px; text-align: center;">{{ result.time_spent }} soniya</td>
+                <td style="padding: 12px; text-align: center;">{{ result.completed_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #7f8c8d; text-align: center; padding: 40px 0;">Bu foydalanuvchi hali test topshirmagan</p>
+    {% endif %}
+</div>
+{% endblock %}

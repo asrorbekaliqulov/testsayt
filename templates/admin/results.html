@@ -1,0 +1,72 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Natijalar - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1 class="page-title">Test Natijalari</h1>
+</div>
+
+<div class="content-box" style="margin-bottom: 20px;">
+    <form method="get" style="display: flex; gap: 15px; align-items: end;">
+        <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Kurs bo'yicha filtr</label>
+            <select name="course" style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+                <option value="">Barcha kurslar</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Test bo'yicha filtr</label>
+            <select name="test" style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+                <option value="">Barcha testlar</option>
+                {% for test in test_blocks %}
+                <option value="{{ test.id }}">{{ test.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="padding: 12px 30px;">Filtr</button>
+    </form>
+</div>
+
+<div class="content-box">
+    {% if results %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ecf0f1;">
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">O'quvchi</th>
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Test</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Ball</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Vaqt</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Sana</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px;">
+                    <a href="{% url 'admin_user_results' result.user.id %}" style="color: #3498db; text-decoration: none;">
+                        {{ result.user.get_full_name }}
+                    </a>
+                </td>
+                <td style="padding: 12px;">{{ result.test_block.title }}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <span style="padding: 6px 12px; border-radius: 20px; background: {% if result.get_percentage >= 60 %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if result.get_percentage >= 60 %}#155724{% else %}#721c24{% endif %}; font-weight: 600;">
+                        {{ result.correct_answers }}/{{ result.total_questions }} ({{ result.get_percentage|floatformat:0 }}%)
+                    </span>
+                </td>
+                <td style="padding: 12px; text-align: center;">{{ result.time_spent }} soniya</td>
+                <td style="padding: 12px; text-align: center;">{{ result.completed_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #7f8c8d; text-align: center; padding: 40px 0;">Natijalar topilmadi</p>
+    {% endif %}
+</div>
+{% endblock %}

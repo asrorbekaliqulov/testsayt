@@ -1,0 +1,48 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Foydalanuvchilar - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1 class="page-title">Foydalanuvchilar</h1>
+    <a href="{% url 'admin_add_user' %}" class="btn btn-success">+ Yangi foydalanuvchi</a>
+</div>
+
+<div class="content-box">
+    {% if users %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ecf0f1;">
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">ID</th>
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Ism Familiya</th>
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Username</th>
+                <th style="padding: 12px; text-align: left; color: #7f8c8d;">Guruh</th>
+                <th style="padding: 12px; text-align: center; color: #7f8c8d;">Amallar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px;">{{ user.id }}</td>
+                <td style="padding: 12px;">{{ user.get_full_name }}</td>
+                <td style="padding: 12px;">{{ user.username }}</td>
+                <td style="padding: 12px;">
+                    {% if user.group %}
+                        {{ user.group.name }}
+                    {% else %}
+                        <span style="color: #95a5a6;">Guruh biriktirilmagan</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 12px; text-align: center;">
+                    <a href="{% url 'admin_edit_user' user.id %}" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">Tahrirlash</a>
+                    <a href="{% url 'admin_user_results' user.id %}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Natijalar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #7f8c8d; text-align: center; padding: 40px 0;">Hozircha foydalanuvchilar yo'q</p>
+    {% endif %}
+</div>
+{% endblock %}

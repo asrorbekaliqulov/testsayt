@@ -1,0 +1,48 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Yangi foydalanuvchi - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1 class="page-title">Yangi foydalanuvchi qo'shish</h1>
+    <a href="{% url 'admin_users' %}" class="btn btn-secondary">Orqaga</a>
+</div>
+
+<div class="content-box" style="max-width: 600px;">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Ism</label>
+            <input type="text" name="first_name" required style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Familiya</label>
+            <input type="text" name="last_name" required style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Username</label>
+            <input type="text" name="username" required style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Parol</label>
+            <input type="password" name="password" required style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Guruh</label>
+            <select name="group" required style="width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 15px;">
+                <option value="">Guruhni tanlang</option>
+                {% for group in groups %}
+                <option value="{{ group.id }}">{{ group.name }} ({{ group.course.name }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-success" style="width: 100%; padding: 14px;">Saqlash</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,131 +1,164 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-class Kurs(models.Model):
-    nomi = models.CharField(max_length=100)
-    raqami = models.IntegerField(unique=True)
+
+class CustomUser(AbstractUser):
+    """Foydalanuvchi modeli"""
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='custom_user_set',
+        related_query_name='custom_user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='custom_user_set',
+        related_query_name='custom_user',
+    )
+    
+    first_name = models.CharField(max_length=100, verbose_name="Ism")
+    last_name = models.CharField(max_length=100, verbose_name="Familiya")
+    group = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="Guruh")
+    
+    class Meta:
+        verbose_name = "Foydalanuvchi"
+        verbose_name_plural = "Foydalanuvchilar"
+    
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+    
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class Course(models.Model):
+    """Kurs modeli"""
+    name = models.CharField(max_length=200, verbose_name="Kurs nomi")
+    description = models.TextField(blank=True, verbose_name="Tavsif")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
     
     class Meta:
         verbose_name = "Kurs"
         verbose_name_plural = "Kurslar"
     
     def __str__(self):
-        return f"{self.raqami}-kurs"
+        return self.name
 
-class TestBlock(models.Model):
-    BLOCK_TURI = [
-        ('ochiq', 'Ochiq test'),
-        ('yopiq', 'Yopiq test'),
-    ]
-    
-    VAQT_TURI = [
-        ('vaqtli', 'Vaqtli'),
-        ('vaqtsiz', 'Vaqtsiz'),
-    ]
-    
-    nomi = models.CharField(max_length=200)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE, related_name='test_blocklari')
-    yaratilgan_vaqt = models.DateTimeField(auto_now_add=True)
-    
-    block_turi = models.CharField(max_length=10, choices=BLOCK_TURI, default='ochiq')
-    vaqt_turi = models.CharField(max_length=10, choices=VAQT_TURI, default='vaqtsiz')
-    
-    # Vaqt sozlamalari
-    boshlash_vaqti = models.DateTimeField(null=True, blank=True, help_text="Test boshlash vaqti")
-    tugash_vaqti = models.DateTimeField(null=True, blank=True, help_text="Test tugash vaqti")
-    savol_vaqti = models.IntegerField(default=60, help_text="Har bir savol uchun vaqt (soniyada)")
-    
-    # Tanlangan userlar (faqat yopiq testlar uchun)
-    tanlangan_userlar = models.ManyToManyField(User, related_name='ruxsat_berilgan_testlar', blank=True)
+
+class Group(models.Model):
+    """Guruh modeli"""
+    name = models.CharField(max_length=100, verbose_name="Guruh nomi")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='groups', verbose_name="Kurs")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
     
     class Meta:
-        verbose_name = "Test Block"
-        verbose_name_plural = "Test Blocklar"
+        verbose_name = "Guruh"
+        verbose_name_plural = "Guruhlar"
     
     def __str__(self):
-        return f"{self.nomi} ({self.kurs}) - {self.get_block_turi_display()}"
-    
-    def is_active(self):
-        """Test hozir aktiv ekanligini tekshiradi"""
-        if not self.boshlash_vaqti or not self.tugash_vaqti:
-            return True  # Vaqt belgilanmagan bo'lsa doim aktiv
-        
-        hozir = timezone.now()
-        return self.boshlash_vaqti <= hozir <= self.tugash_vaqti
-    
-    def user_can_access(self, user):
-        """User testga kira oladimi tekshiradi"""
-        if self.block_turi == 'ochiq':
-            return True
-        else:  # yopiq
-            return self.tanlangan_userlar.filter(id=user.id).exists()
+        return f"{self.name} ({self.course.name})"
 
-class Savol(models.Model):
-    block = models.ForeignKey(TestBlock, on_delete=models.CASCADE, related_name='savollar')
-    matn = models.TextField()
-    rasm = models.ImageField(upload_to='savol_rasmlari/', null=True, blank=True, help_text="Savolga rasm qo'shish (majburiy emas)")
-    variant_a = models.CharField(max_length=500)
-    variant_b = models.CharField(max_length=500)
-    variant_c = models.CharField(max_length=500)
-    variant_d = models.CharField(max_length=500)
-    togri_javob = models.CharField(max_length=1, choices=[
-        ('A', 'A'),
-        ('B', 'B'),
-        ('C', 'C'),
-        ('D', 'D'),
-    ])
+
+class TestBlock(models.Model):
+    """Test bloki modeli"""
+    title = models.CharField(max_length=200, verbose_name="Test nomi")
+    description = models.TextField(blank=True, verbose_name="Tavsif")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='test_blocks', verbose_name="Kurs")
+    start_time = models.DateTimeField(verbose_name="Boshlanish vaqti")
+    time_per_question = models.IntegerField(default=2, verbose_name="Har bir savol uchun vaqt (daqiqa)")
+    is_active = models.BooleanField(default=True, verbose_name="Faol")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
+    
+    class Meta:
+        verbose_name = "Test bloki"
+        verbose_name_plural = "Test bloklari"
+        ordering = ['start_time']
+    
+    def __str__(self):
+        return self.title
+    
+    def is_unlocked(self):
+        """Test ochilganmi tekshirish"""
+        return timezone.now() >= self.start_time
+    
+    def get_end_time(self):
+        """Test tugash vaqtini hisoblash"""
+        question_count = self.questions.count()
+        total_minutes = question_count * self.time_per_question
+        from datetime import timedelta
+        return self.start_time + timedelta(minutes=total_minutes)
+    
+    def is_expired(self):
+        """Test muddati o'tganmi"""
+        return timezone.now() > self.get_end_time()
+    
+    def can_take_test(self):
+        """Test topshirish mumkinmi"""
+        return self.is_unlocked() and not self.is_expired() and self.is_active
+
+
+class Question(models.Model):
+    """Savol modeli"""
+    test_block = models.ForeignKey(TestBlock, on_delete=models.CASCADE, related_name='questions', verbose_name="Test bloki")
+    question_text = models.TextField(verbose_name="Savol matni")
+    option_a = models.CharField(max_length=500, verbose_name="A variant")
+    option_b = models.CharField(max_length=500, verbose_name="B variant")
+    option_c = models.CharField(max_length=500, verbose_name="C variant")
+    option_d = models.CharField(max_length=500, verbose_name="D variant")
+    correct_answer = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')], verbose_name="To'g'ri javob")
+    order = models.IntegerField(default=0, verbose_name="Tartib raqami")
     
     class Meta:
         verbose_name = "Savol"
         verbose_name_plural = "Savollar"
+        ordering = ['order', 'id']
     
     def __str__(self):
-        return self.matn[:50]
+        return f"{self.test_block.title} - Savol {self.order}"
 
-class TestNatija(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    block = models.ForeignKey(TestBlock, on_delete=models.CASCADE, related_name='natijalar')
-    togri_javoblar = models.IntegerField(default=0)
-    xato_javoblar = models.IntegerField(default=0)
-    jami_savollar = models.IntegerField(default=0)
-    vaqt_sekund = models.IntegerField()
-    topshirilgan_vaqt = models.DateTimeField(auto_now_add=True)
-    
-    javoblar = models.JSONField(default=dict, blank=True)
+
+class TestResult(models.Model):
+    """Test natijasi modeli"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='test_results', verbose_name="Foydalanuvchi")
+    test_block = models.ForeignKey(TestBlock, on_delete=models.CASCADE, related_name='results', verbose_name="Test bloki")
+    score = models.IntegerField(default=0, verbose_name="Ball")
+    total_questions = models.IntegerField(default=0, verbose_name="Jami savollar")
+    correct_answers = models.IntegerField(default=0, verbose_name="To'g'ri javoblar")
+    completed_at = models.DateTimeField(auto_now_add=True, verbose_name="Topshirilgan vaqt")
+    time_spent = models.IntegerField(default=0, verbose_name="Sarflangan vaqt (soniya)")
     
     class Meta:
-        verbose_name = "Test Natijasi"
-        verbose_name_plural = "Test Natijalari"
-        ordering = ['-topshirilgan_vaqt']
+        verbose_name = "Test natijasi"
+        verbose_name_plural = "Test natijalari"
+        ordering = ['-completed_at']
     
     def __str__(self):
-        return f"{self.user.username} - {self.block.nomi}"
+        return f"{self.user.get_full_name()} - {self.test_block.title} ({self.score}%)"
     
-    def foiz(self):
-        if self.jami_savollar > 0:
-            return round((self.togri_javoblar / self.jami_savollar) * 100, 2)
+    def get_percentage(self):
+        if self.total_questions > 0:
+            return round((self.correct_answers / self.total_questions) * 100, 2)
         return 0
 
-class RetestRequest(models.Model):
-    STATUS_CHOICES = [
-        ('kutilmoqda', 'Kutilmoqda'),
-        ('tasdiqlandi', 'Tasdiqlandi'),
-        ('rad_etildi', 'Rad etildi'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='retest_requests')
-    block = models.ForeignKey(TestBlock, on_delete=models.CASCADE, related_name='retest_requests')
-    sabab = models.TextField(help_text="Qayta test ishlash uchun sabab")
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='kutilmoqda')
-    yuborilgan_vaqt = models.DateTimeField(auto_now_add=True)
-    admin_javobi = models.TextField(blank=True, null=True)
-    korilgan_vaqt = models.DateTimeField(null=True, blank=True)
+
+class UserAnswer(models.Model):
+    """Foydalanuvchi javobi modeli"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='answers', verbose_name="Foydalanuvchi")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='user_answers', verbose_name="Savol")
+    selected_answer = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')], verbose_name="Tanlangan javob")
+    is_correct = models.BooleanField(default=False, verbose_name="To'g'ri javob")
+    answered_at = models.DateTimeField(auto_now_add=True, verbose_name="Javob berilgan vaqt")
     
     class Meta:
-        verbose_name = "Qayta Test So'rovi"
-        verbose_name_plural = "Qayta Test So'rovlari"
-        ordering = ['-yuborilgan_vaqt']
+        verbose_name = "Foydalanuvchi javobi"
+        verbose_name_plural = "Foydalanuvchi javoblari"
+        unique_together = ['user', 'question']
     
     def __str__(self):
-        return f"{self.user.username} - {self.block.nomi} ({self.get_status_display()})"
+        return f"{self.user.get_full_name()} - {self.question.question_text[:50]}"

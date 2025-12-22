@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kirish | IIV Sirdaryo akademik litseyi{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .wrapper {
+        display: flex;
+        height: 100vh;
+        box-shadow: inset 0 0 0 1000px rgba(255, 255, 255, 0.1);
+    }
+
+    .left {
+        width: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideInLeft 0.8s ease;
+    }
+
+    @keyframes slideInLeft {
+        from {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .form-box {
+        width: 380px;
+        padding: 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .logo {
+        width: 100px;
+        display: block;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .subtitle {
+        font-size: 14px;
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    label {
+        font-size: 14px;
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    input {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        border: 2px solid #e1e5e9;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2979ff;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #2979ff 0%, #1e5eff 100%);
+        border: none;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background: linear-gradient(135deg, #1e5eff 0%, #125be0 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(41, 121, 255, 0.3);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    .right {
+        width: 50%;
+        background: url('{% static '/img/img-1.jpg' %}') center/cover no-repeat;
+        position: relative;
+        animation: slideInRight 0.8s ease;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .right::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+    }
+
+    @media (max-width: 768px) {
+        .wrapper {
+            flex-direction: column;
+        }
+        .left, .right {
+            width: 100%;
+            height: 50vh;
+        }
+        .form-box {
+            width: 90%;
+            max-width: 360px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+    <div class="left">
+        <div class="form-box">
+            <img src="{% static '/img/img-2.jpg' %}" class="logo" alt="Logo">
+
+            <p class="subtitle">
+                IIV Sirdaryo akademik litseyi<br>
+                axborot test markazi
+            </p>
+
+            <h2>Kirish</h2>
+
+            <form method="post">
+                {% csrf_token %}
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Username kiriting" required autofocus>
+
+                <label>Parol</label>
+                <input type="password" name="password" placeholder="Parol kiriting" required>
+
+                <button type="submit">Kirish</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="right"></div>
+</div>
+{% endblock %}

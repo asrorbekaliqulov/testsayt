@@ -1,0 +1,168 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}{{ test_block.title }} - Savollar | Admin Panel{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1><i class="fas fa-question-circle"></i> {{ test_block.title }}</h1>
+        <p style="color: #999; margin-top: 5px;">
+            <i class="fas fa-book"></i> {{ test_block.course.name }} | 
+            <i class="fas fa-clock"></i> {{ test_block.start_time|date:"d.m.Y H:i" }}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'admin_add_question' test_block.id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yangi Savol
+        </a>
+        <a href="{% url 'admin_test_blocks' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Orqaga
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        {% if questions %}
+        <div class="questions-list">
+            {% for question in questions %}
+            <div class="question-item">
+                <div class="question-header">
+                    <div>
+                        <span class="question-number">Savol {{ question.order }}</span>
+                        <p class="question-text">{{ question.question_text }}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'admin_edit_question' question.id %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{% url 'admin_delete_question' question.id %}" style="display: inline;" onsubmit="return confirm('Rostdan ham bu savolni o\'chirmoqchimisiz?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="question-options">
+                    <div class="option {% if question.correct_answer == 'A' %}correct-option{% endif %}">
+                        <strong>A)</strong> {{ question.option_a }}
+                        {% if question.correct_answer == 'A' %}<i class="fas fa-check-circle"></i>{% endif %}
+                    </div>
+                    <div class="option {% if question.correct_answer == 'B' %}correct-option{% endif %}">
+                        <strong>B)</strong> {{ question.option_b }}
+                        {% if question.correct_answer == 'B' %}<i class="fas fa-check-circle"></i>{% endif %}
+                    </div>
+                    <div class="option {% if question.correct_answer == 'C' %}correct-option{% endif %}">
+                        <strong>C)</strong> {{ question.option_c }}
+                        {% if question.correct_answer == 'C' %}<i class="fas fa-check-circle"></i>{% endif %}
+                    </div>
+                    <div class="option {% if question.correct_answer == 'D' %}correct-option{% endif %}">
+                        <strong>D)</strong> {{ question.option_d }}
+                        {% if question.correct_answer == 'D' %}<i class="fas fa-check-circle"></i>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <i class="fas fa-question-circle" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+            <p style="color: #999; font-size: 18px;">Hozircha savollar qo'shilmagan</p>
+            <a href="{% url 'admin_add_question' test_block.id %}" class="btn btn-primary" style="margin-top: 15px;">
+                <i class="fas fa-plus"></i> Birinchi savolni qo'shish
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.question-item {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.question-item:hover {
+    border-color: rgba(110, 231, 183, 0.3);
+    background: rgba(255,255,255,0.04);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.question-number {
+    display: inline-block;
+    background: linear-gradient(90deg, #6ee7b7, #60a5fa);
+    color: #0f1724;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.question-text {
+    color: #e6eef8;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.question-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.option {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: rgba(230, 238, 248, 0.9);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.option strong {
+    color: #60a5fa;
+    min-width: 25px;
+}
+
+.correct-option {
+    background: rgba(110, 231, 183, 0.1);
+    border-color: rgba(110, 231, 183, 0.3);
+}
+
+.correct-option i {
+    color: #6ee7b7;
+    margin-left: auto;
+}
+</style>
+{% endblock %}
