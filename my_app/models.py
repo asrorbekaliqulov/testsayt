@@ -55,6 +55,7 @@ class Group(models.Model):
     """Guruh modeli"""
     name = models.CharField(max_length=100, verbose_name="Guruh nomi")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='groups', verbose_name="Kurs")
+    description = models.TextField(blank=True, verbose_name="Tavsif")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
     
     class Meta:
